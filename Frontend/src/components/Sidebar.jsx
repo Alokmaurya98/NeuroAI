@@ -1,4 +1,4 @@
-import './SideBar.css'
+import './Sidebar.css'
 function Sidebar() {
   return (
      <section className="sidebar">
