@@ -21,7 +21,10 @@ function ChatWindow(){
       })
     };
     try{
-      const response=await fetch("http://localhost:8080/api/chat",options);
+      const response = await fetch(
+  `${import.meta.env.VITE_API_BASE_URL}/api/chat`,
+  options
+);
       const data=await response.json();
     if (!response.ok) {
       console.error(data.error);
