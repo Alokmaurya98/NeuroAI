@@ -9,6 +9,20 @@ body {
 }
 
 .app {
-    background-color: #212121;
+    background: linear-gradient(135deg, #0f0f0f 0%, #1a1a1a 100%);
     display: flex;
+    min-height: 100vh;
+}
+
+/* Responsiveness */
+@media (max-width: 768px) {
+    .app {
+        flex-direction: column;
+    }
+}
+
+@media (max-width: 480px) {
+    * {
+        font-size: 14px;
+    }
 }

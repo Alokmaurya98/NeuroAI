@@ -1,62 +1,87 @@
-/* eslint-disable react-hooks/exhaustive-deps */
-/* eslint-disable no-unused-vars */
+import "./Chat.css";
+import React, { useContext, useState, useEffect } from "react";
+import { MyContext } from "../MyContext.jsx";
+import ReactMarkdown from "react-markdown";
+import rehypeHighlight from "rehype-highlight";
+import "highlight.js/styles/github-dark.css";
 
-import './Chat.css'
-import { MyContext } from '../MyContext.jsx';
-import { useContext,useState,useEffect } from 'react';
-import ReactMarkdown from 'react-markdown';
-import rehypeHighlight from 'rehype-highlight';
-import 'highlight.js/styles/atom-one-dark.css';   
+function Chat() {
+    const {newChat, prevChats, reply} = useContext(MyContext);
+    const [latestReply, setLatestReply] = useState(null);
 
-function Chat(){
-  const{newChat,prevChats,reply}=useContext(MyContext);
-  const[latestReply,setLatestReply]=useState(null);
-  useEffect(() => {
-  if (!reply || typeof reply !== "string") return;
-  if (!prevChats || prevChats.length === 0) return;
+    useEffect(() => {
+        if(reply === null) {
+            setLatestReply(null); //prevchat load
+            return;
+        }
 
-  const content = reply.split(" ");
-  let idx = 0;
+        if(!Array.isArray(prevChats) || !prevChats.length) return;
 
-  const interval = setInterval(() => {
-    setLatestReply(content.slice(0, idx + 1).join(" "));
-    idx++;
-    if (idx >= content.length) clearInterval(interval);
-  }, 40);
+        if(typeof reply !== 'string') return;
 
-  return () => clearInterval(interval);
-}, [prevChats, reply]);
+        const content = reply.split(" "); //individual words
 
-  return (
+        let idx = 0;
+        const interval = setInterval(() => {
+            setLatestReply(content.slice(0, idx+1).join(" "));
+
+            idx++;
+            if(idx >= content.length) clearInterval(interval);
+        }, 40);
+
+        return () => clearInterval(interval);
+
+    }, [prevChats, reply])
+
+    return (
+        <div className={`chatContainer ${newChat ? 'welcome' : ''}`}>
+            {newChat && <h1>Hey Buddy! What's on your Mind Today</h1>}
+            <div className="chats">
+                {
+                    (Array.isArray(prevChats) ? prevChats.slice(0, -1) : []).map((chat, idx) =>
+                        <div className={chat.role === "user"? "userDiv" : "gptDiv"} key={idx}>
+                            {chat.role === "assistant" && <div className="avatar gptAvatar">AI</div>}
+                            {
+                                chat.role === "user"?
+                                <>
+                                    <p className="userMessage">{chat.content}</p>
+                                    <div className="avatar userAvatar">U</div>
+                                </> :
+                                <ReactMarkdown className="gptMessage" rehypePlugins={[rehypeHighlight]}>{chat.content}</ReactMarkdown>
+                            }
+                        </div>
+                    )
+                }
+
+               {
+  Array.isArray(prevChats) && prevChats.length > 0 && (
     <>
-    {newChat&&<h1>What's up buddy ! What's on your Mind Today </h1>}
-    <div className="chats">
-      {
-        prevChats?.slice(0,-1).map((chat,index)=>
-        <div className={chat.role==="user"? "userDiv":"gptDiv"} key={index}>
-          {
-          chat.role==="user" ?
-          <p className="userMessage">{chat.content}</p>
-          :
-          <ReactMarkdown rehypePlugins={[rehypeHighlight]}>
-  {chat.content}
-</ReactMarkdown>
-
-          }
+      {latestReply === null ? (
+        <div className="gptDiv" key="non-typing">
+          <div className="avatar gptAvatar">AI</div>
+          <div className="gptMessage">
+            <ReactMarkdown rehypePlugins={[rehypeHighlight]}>
+              {prevChats[prevChats.length - 1].content}
+            </ReactMarkdown>
+          </div>
         </div>
-        )
-      }
-      {
-        prevChats&&prevChats.length>0&&latestReply!=null&&
-        <div className="gptDiv">
-          <ReactMarkdown rehypePlugins={[rehypeHighlight]}>
-  {latestReply}
-</ReactMarkdown>
-
+      ) : (
+        <div className="gptDiv typing" key="typing">
+          <div className="avatar gptAvatar">AI</div>
+          <div className="gptMessage">
+            <ReactMarkdown rehypePlugins={[rehypeHighlight]}>
+              {latestReply}
+            </ReactMarkdown>
+          </div>
         </div>
-      }
-    </div>
-     </>
+      )}
+    </>
   )
 }
+
+            </div>
+        </div>
+    )
+}
+
 export default Chat;
